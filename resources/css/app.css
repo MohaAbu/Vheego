@@ -1,0 +1,408 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Vheego Custom Styles */
+/* Custom CSS Variables for Vheego Brand Colors */
+:root {
+  /* Primary Colors */
+  --vheego-navy-50: #eff6ff;
+  --vheego-navy-100: #dbeafe;
+  --vheego-navy-200: #bfdbfe;
+  --vheego-navy-300: #93c5fd;
+  --vheego-navy-400: #60a5fa;
+  --vheego-navy-500: #3b82f6;
+  --vheego-navy-600: #2563eb;
+  --vheego-navy-700: #1d4ed8;
+  --vheego-navy-800: #1e40af;
+  --vheego-navy-900: #1e3a8a;
+  --vheego-navy-950: #172554;
+
+  /* Status Colors */
+  --vheego-success: #10b981;
+  --vheego-warning: #f59e0b;
+  --vheego-error: #ef4444;
+  --vheego-info: #3b82f6;
+
+  /* Semantic Colors */
+  --color-available: var(--vheego-success);
+  --color-unavailable: var(--vheego-error);
+  --color-pending: var(--vheego-warning);
+  --color-confirmed: var(--vheego-info);
+
+  /* Spacing */
+  --vheego-spacing-xs: 0.25rem;
+  --vheego-spacing-sm: 0.5rem;
+  --vheego-spacing-md: 1rem;
+  --vheego-spacing-lg: 1.5rem;
+  --vheego-spacing-xl: 2rem;
+  --vheego-spacing-2xl: 3rem;
+
+  /* Border Radius */
+  --vheego-radius-sm: 0.375rem;
+  --vheego-radius-md: 0.5rem;
+  --vheego-radius-lg: 0.75rem;
+  --vheego-radius-xl: 1rem;
+  --vheego-radius-2xl: 1.5rem;
+  --vheego-radius-3xl: 2rem;
+
+  /* Shadows */
+  --vheego-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --vheego-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --vheego-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --vheego-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Transitions */
+  --vheego-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --vheego-transition-fast: all 0.1s ease;
+  --vheego-transition-slow: all 0.3s ease;
+}
+
+/* Base Styles */
+html {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Heading Styles */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.025em;
+}
+
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
+h5 { font-size: 1.125rem; }
+h6 { font-size: 1rem; }
+
+/* Custom Button Components */
+.btn-primary {
+  @apply inline-flex items-center px-4 py-2 bg-vheego-blue-600 hover:bg-vheego-blue-700 focus:bg-vheego-blue-700 active:bg-vheego-blue-800 border border-transparent rounded-lg font-medium text-sm text-white tracking-wide focus:outline-none focus:ring-2 focus:ring-vheego-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 active:scale-95;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center px-4 py-2 bg-white hover:bg-gray-50 border border-gray-300 rounded-lg font-medium text-sm text-gray-700 tracking-wide focus:outline-none focus:ring-2 focus:ring-vheego-blue-500 focus:ring-offset-2 transition-all duration-200;
+}
+
+.btn-success {
+  @apply inline-flex items-center px-4 py-2 bg-vheego-success-600 hover:bg-vheego-success-700 border border-transparent rounded-lg font-medium text-sm text-white tracking-wide focus:outline-none focus:ring-2 focus:ring-vheego-success-500 focus:ring-offset-2 transition-all duration-200;
+}
+
+.btn-warning {
+  @apply inline-flex items-center px-4 py-2 bg-vheego-warning-600 hover:bg-vheego-warning-700 border border-transparent rounded-lg font-medium text-sm text-white tracking-wide focus:outline-none focus:ring-2 focus:ring-vheego-warning-500 focus:ring-offset-2 transition-all duration-200;
+}
+
+.btn-error {
+  @apply inline-flex items-center px-4 py-2 bg-vheego-error-600 hover:bg-vheego-error-700 border border-transparent rounded-lg font-medium text-sm text-white tracking-wide focus:outline-none focus:ring-2 focus:ring-vheego-error-500 focus:ring-offset-2 transition-all duration-200;
+}
+
+/* Card Components */
+.card {
+  @apply bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-200;
+}
+
+.card-hover {
+  @apply hover:shadow-md hover:-translate-y-1;
+}
+
+.card-interactive {
+  @apply cursor-pointer hover:shadow-lg hover:-translate-y-2 transition-all duration-300;
+}
+
+/* Car Card Specific Styles */
+.car-card {
+  @apply bg-white rounded-2xl shadow-sm hover:shadow-lg border border-gray-100 overflow-hidden transition-all duration-300;
+  /* Add 'group' as a class in your HTML, not here */
+}
+
+.car-card:hover {
+  transform: translateY(-8px);
+}
+
+.car-card-image {
+  @apply w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500;
+}
+
+/* Status Badges */
+.badge {
+  @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-available {
+  @apply bg-vheego-success-100 text-vheego-success-800;
+}
+
+.badge-unavailable {
+  @apply bg-vheego-error-100 text-vheego-error-800;
+}
+
+.badge-pending {
+  @apply bg-vheego-warning-100 text-vheego-warning-800;
+}
+
+.badge-confirmed {
+  @apply bg-vheego-blue-100 text-vheego-blue-800;
+}
+
+.badge-admin {
+  @apply bg-vheego-blue-100 text-vheego-blue-800;
+}
+
+.badge-renter {
+  @apply bg-vheego-success-100 text-vheego-success-800;
+}
+
+.badge-customer {
+  @apply bg-purple-100 text-purple-800;
+}
+
+/* Form Styles */
+.form-input {
+  @apply block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-vheego-blue-500 focus:border-vheego-blue-500 transition-colors duration-200;
+}
+
+.form-input-error {
+  @apply border-vheego-error-500 focus:ring-vheego-error-500 focus:border-vheego-error-500;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.form-error {
+  @apply mt-1 text-sm text-vheego-error-600;
+}
+
+.form-hint {
+  @apply mt-1 text-sm text-gray-500;
+}
+
+/* Dashboard Styles */
+.dashboard-stat-card {
+  @apply bg-white rounded-2xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition-shadow duration-200;
+}
+
+.dashboard-stat-icon {
+  @apply p-3 rounded-xl flex-shrink-0;
+}
+
+.dashboard-stat-value {
+  @apply text-2xl font-bold text-gray-900;
+}
+
+.dashboard-stat-label {
+  @apply text-sm font-medium text-gray-500;
+}
+
+.dashboard-stat-change {
+  @apply text-sm flex items-center mt-1;
+}
+
+/* Navigation Styles */
+.nav-link {
+  @apply inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium text-gray-700 hover:text-vheego-blue-600 hover:border-vheego-blue-300 transition-colors duration-200;
+}
+
+.nav-link-active {
+  @apply border-vheego-blue-500 text-vheego-blue-600;
+}
+
+/* Alert Styles */
+.alert {
+  @apply rounded-lg p-4 mb-6;
+}
+
+.alert-success {
+  @apply bg-vheego-success-50 text-vheego-success-800 border border-vheego-success-200;
+}
+
+.alert-warning {
+  @apply bg-vheego-warning-50 text-vheego-warning-800 border border-vheego-warning-200;
+}
+
+.alert-error {
+  @apply bg-vheego-error-50 text-vheego-error-800 border border-vheego-error-200;
+}
+
+.alert-info {
+  @apply bg-vheego-blue-50 text-vheego-blue-800 border border-vheego-blue-200;
+}
+
+/* Loading Animations */
+.loading-spinner {
+  @apply animate-spin rounded-full border-2 border-gray-300 border-t-vheego-blue-600;
+}
+
+.loading-pulse {
+  @apply animate-pulse bg-gray-200 rounded;
+}
+
+/* Custom Animations */
+@keyframes slideInUp {
+  from {
+    transform: translate3d(0, 100%, 0);
+    visibility: visible;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes slideInDown {
+  from {
+    transform: translate3d(0, -100%, 0);
+    visibility: visible;
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+/* Animation Classes */
+.animate-slide-in-up {
+  animation: slideInUp 0.3s ease-out;
+}
+
+.animate-slide-in-down {
+  animation: slideInDown 0.3s ease-out;
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.3s ease-out;
+}
+
+.animate-shimmer {
+  background: linear-gradient(to right, #f1f5f9 8%, #e2e8f0 18%, #f1f5f9 33%);
+  background-size: 800px 104px;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* Utility Classes */
+.glass-morphism {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, var(--vheego-navy-600), var(--vheego-navy-800));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.bg-gradient-vheego {
+  background: linear-gradient(135deg, var(--vheego-navy-600), var(--vheego-navy-800));
+}
+
+.border-gradient {
+  border: 2px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, var(--vheego-navy-500), var(--vheego-navy-700)) border-box;
+}
+
+/* Responsive Typography */
+@media (max-width: 640px) {
+  h1 { font-size: 2rem; }
+  h2 { font-size: 1.75rem; }
+  h3 { font-size: 1.25rem; }
+}
+
+/* Dark Mode Support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .dark-mode {
+    --vheego-bg: #0f172a;
+    --vheego-surface: #1e293b;
+    --vheego-text: #f1f5f9;
+    --vheego-text-muted: #94a3b8;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  
+  .print-break {
+    page-break-after: always;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Focus Management */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-vheego-blue-500 focus:ring-offset-2;
+}
+
+/* Accessibility Improvements */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .btn-primary {
+    border: 2px solid currentColor;
+  }
+  
+  .card {
+    border: 2px solid #e2e8f0;
+  }
+}
