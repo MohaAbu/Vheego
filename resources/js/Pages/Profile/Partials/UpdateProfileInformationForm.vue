@@ -77,21 +77,23 @@ function submitForm() {
 <template>
     <section>
         <!-- Profile Picture Upload -->
-        <div class="flex items-center gap-6 mb-6">
+        <div class="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-6">
             <div class="relative">
                 <img
                     :src="previewUrl"
                     alt="Profile Picture"
                     class="w-20 h-20 rounded-xl object-cover border-2 border-slate-200 shadow-sm"
                 />
-                <div class="absolute inset-0 bg-black/50 rounded-xl opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer group">
-                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
+                <div class="absolute inset-0 bg-gradient-to-br from-blue-500/80 to-indigo-500/80 rounded-xl opacity-0 hover:opacity-100 transition-all duration-300 flex items-center justify-center cursor-pointer group backdrop-blur-sm">
+                    <div class="transform group-hover:scale-110 transition-transform duration-200">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
                 </div>
             </div>
-            <div>
+            <div class="text-center sm:text-left">
                 <input
                     type="file"
                     accept="image/*"
@@ -99,13 +101,13 @@ function submitForm() {
                     id="profile-picture-upload"
                     class="hidden"
                 />
-                <label for="profile-picture-upload" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors cursor-pointer">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <label for="profile-picture-upload" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 transform hover:scale-105 transition-all duration-200 cursor-pointer shadow-lg hover:shadow-xl">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                     </svg>
                     Upload Photo
                 </label>
-                <p class="text-sm text-slate-500 mt-1">JPG, PNG or GIF (max. 2MB)</p>
+                <p class="text-sm text-slate-500 mt-2">JPG, PNG or GIF (max. 2MB)</p>
             </div>
         </div>
         <InputError class="mb-4" :message="form.errors.profile_picture" />
@@ -172,11 +174,11 @@ function submitForm() {
                 </div>
             </div>
 
-            <div class="flex items-center gap-4 pt-4">
+            <div class="flex flex-col sm:flex-row items-center gap-4 pt-4">
                 <button
                     type="submit"
                     :disabled="form.processing"
-                    class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    class="inline-flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                     <svg v-if="form.processing" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

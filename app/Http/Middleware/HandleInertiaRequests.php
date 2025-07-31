@@ -39,12 +39,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                'user' => $request->user()
-                    ? array_merge(
-                        $request->user()->toArray(),
-                        ['profile_picture_url' => $request->user()->profile_picture_url]
-                    )
-                    : null,
+                'user' => $request->user() ? $this->getUserWithRelations($request->user()) : null,
             ],
             'flash' => [
                 'success' => $request->session()->get('success'),
@@ -54,5 +49,21 @@ class HandleInertiaRequests extends Middleware
             'globalSettings' => $globalSettings,
             'appName' => $globalSettings['platform_name'] ?? config('app.name', 'Vheego'),
         ];
+    }
+
+    /**
+     * Get user data with necessary relationships loaded
+     */
+    private function getUserWithRelations($user)
+    {
+        // Load agency relationship for renters
+        if ($user->user_type === 'renter') {
+            $user->load('agency');
+        }
+        
+        return array_merge(
+            $user->toArray(),
+            ['profile_picture_url' => $user->profile_picture_url]
+        );
     }
 }

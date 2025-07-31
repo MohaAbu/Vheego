@@ -139,4 +139,56 @@ class ReservationController extends Controller
         // For API: return reservation data; for web: return view (to be implemented)
         return response()->json(['reservation' => $reservation, 'message' => 'Reservation confirmed!']);
     }
+
+    // Update reservation status (for renters to manage their bookings)
+    public function updateStatus(Request $request, $id)
+    {
+        $reservation = Reservation::with('car.agency')->findOrFail($id);
+        $user = Auth::user();
+        
+        // Authorization: only renter who owns the car or admin can update status
+        if ($user->user_type === 'renter') {
+            if ($reservation->car->agency->renter_id !== $user->id) {
+                abort(403, 'You can only update status for your own car reservations.');
+            }
+        } elseif ($user->user_type !== 'admin') {
+            abort(403, 'Only renters and admins can update reservation status.');
+        }
+        
+        $request->validate([
+            'status' => 'required|in:pending,confirmed,completed,cancelled'
+        ]);
+        
+        $oldStatus = $reservation->status;
+        $newStatus = $request->status;
+        
+        // Business logic for status transitions
+        $allowedTransitions = [
+            'pending' => ['confirmed', 'cancelled'],
+            'confirmed' => ['completed', 'cancelled'],
+            'completed' => [], // Cannot change from completed
+            'cancelled' => [], // Cannot change from cancelled
+        ];
+        
+        if (!in_array($newStatus, $allowedTransitions[$oldStatus])) {
+            return response()->json([
+                'message' => "Cannot change status from {$oldStatus} to {$newStatus}"
+            ], 422);
+        }
+        
+        $reservation->status = $newStatus;
+        $reservation->save();
+        
+        // Send notifications for status changes
+        if ($newStatus === 'confirmed') {
+            $reservation->customer->notify(new \App\Notifications\ReservationConfirmed($reservation));
+        } elseif ($newStatus === 'cancelled') {
+            $reservation->customer->notify(new \App\Notifications\ReservationCancelled($reservation));
+        }
+        
+        return response()->json([
+            'message' => 'Reservation status updated successfully!',
+            'reservation' => $reservation->fresh(['car.agency', 'customer'])
+        ]);
+    }
 } 

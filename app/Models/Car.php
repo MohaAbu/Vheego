@@ -39,6 +39,11 @@ class Car extends Model
         return $this->belongsTo(Agency::class);
     }
 
+    public function renter()
+    {
+        return $this->hasOneThrough(User::class, Agency::class, 'id', 'id', 'agency_id', 'renter_id');
+    }
+
     public function reservations()
     {
         return $this->hasMany(Reservation::class);

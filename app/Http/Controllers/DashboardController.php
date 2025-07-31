@@ -21,7 +21,8 @@ class DashboardController extends Controller
                 return redirect('/')->with('info', 'Your agency application is under review. You will be notified once approved.');
             }
             
-            return Inertia::render('Dashboard/RenterDashboard');
+            // Redirect to the renter dashboard route
+            return redirect()->route('dashboard.renter');
         } else {
             return redirect('/');
         }

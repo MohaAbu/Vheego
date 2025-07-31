@@ -24,10 +24,11 @@ const links = computed(() => {
     ];
   } else {
     return [
-      { name: 'Dashboard', href: '/dashboard', icon: 'fa-solid fa-gauge', color: 'text-blue-500' },
-      { name: 'My Cars', href: '/cars', icon: 'fa-solid fa-car', color: 'text-green-500' },
-      { name: 'Agency Profile', href: user?.agency ? `/agencies/${user.agency.id}` : '/agency/status', icon: 'fa-solid fa-building', color: 'text-purple-500' },
-      { name: 'Bookings', href: '/bookings', icon: 'fa-solid fa-calendar-check', color: 'text-yellow-500' },
+      { name: 'Agency Dashboard', href: '/dashboard', icon: 'fa-solid fa-gauge', color: 'text-blue-500' },
+      { name: 'Fleet Management', href: '/manage/cars', icon: 'fa-solid fa-car', color: 'text-green-500' },
+      { name: 'Reservations', href: '/agency/bookings', icon: 'fa-solid fa-calendar-check', color: 'text-yellow-500' },
+      { name: 'Agency Profile', href: (user?.agency && user.agency.verification_status === 'approved') ? '/agency/settings' : '/agency/status', icon: 'fa-solid fa-building', color: 'text-purple-500' },
+      { name: 'Analytics', href: '/agency/analytics', icon: 'fa-solid fa-chart-line', color: 'text-indigo-500' },
     ];
   }
 });

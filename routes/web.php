@@ -84,6 +84,7 @@ Route::middleware('auth')->group(function () {
     Route::get('reservations/{id}/payment', [App\Http\Controllers\ReservationController::class, 'paymentForm'])->name('reservations.payment');
     Route::post('reservations/{id}/payment', [App\Http\Controllers\ReservationController::class, 'processPayment'])->name('reservations.processPayment');
     Route::get('reservations/{id}/confirmation', [App\Http\Controllers\ReservationController::class, 'confirmation'])->name('reservations.confirmation');
+    Route::patch('reservations/{id}/status', [App\Http\Controllers\ReservationController::class, 'updateStatus'])->name('reservations.updateStatus');
     // Customer favorites (wishlist)
     Route::get('/favorites', [\App\Http\Controllers\CustomerFavoriteController::class, 'index'])->name('favorites.index');
     Route::post('/favorites', [\App\Http\Controllers\CustomerFavoriteController::class, 'store'])->name('favorites.store');
@@ -92,19 +93,39 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth'])->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+// Renter dashboard route
+Route::middleware(['auth', 'role:renter'])->get('/renter/dashboard', [\App\Http\Controllers\RenterController::class, 'dashboard'])->name('dashboard.renter');
+
 Route::middleware(['auth', 'role:renter'])->group(function () {
     Route::get('/agency/setup', [\App\Http\Controllers\AgencyController::class, 'create'])->name('agency.create');
     Route::post('/agency/setup', [\App\Http\Controllers\AgencyController::class, 'store'])->name('agency.store');
 });
 
+// Public cars browsing (must come first to avoid conflicts)
+Route::get('/cars', [CarController::class, 'publicIndex'])->name('cars.public');
+
 Route::middleware(['auth', 'approved.renter'])->group(function () {
-    // Car management routes (only for approved renters)
-    Route::resource('cars', \App\Http\Controllers\CarController::class);
+    // Car management routes (only for approved renters) - using 'manage' prefix
+    Route::resource('manage/cars', \App\Http\Controllers\CarController::class)->names([
+        'index' => 'cars.index',
+        'create' => 'cars.create', 
+        'store' => 'cars.store',
+        'show' => 'cars.show',
+        'edit' => 'cars.edit',
+        'update' => 'cars.update',
+        'destroy' => 'cars.destroy'
+    ]);
     // Car image deletion
     Route::delete('/car-images/{id}', [\App\Http\Controllers\CarController::class, 'destroyImage'])->name('car-images.destroy');
+    
+    // Agency-specific routes
+    Route::prefix('agency')->name('agency.')->group(function () {
+        Route::get('/bookings', [\App\Http\Controllers\AgencyController::class, 'bookings'])->name('bookings');
+        Route::get('/analytics', [\App\Http\Controllers\AgencyController::class, 'analytics'])->name('analytics');
+        Route::get('/settings', [\App\Http\Controllers\AgencyController::class, 'settings'])->name('settings');
+        Route::post('/settings', [\App\Http\Controllers\AgencyController::class, 'updateSettings'])->name('settings.update');
+    });
 });
-
-Route::get('/cars', [CarController::class, 'publicIndex'])->name('cars.public');
 Route::get('/api/cars/related/{car}', [CarController::class, 'relatedCars'])->name('cars.related');
 Route::get('/cars/{car}', [CarController::class, 'publicShow'])->name('cars.publicShow');
 Route::get('/agency/status', [AgencyController::class, 'status'])->name('agency.status')->middleware(['auth']);
