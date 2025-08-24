@@ -127,6 +127,7 @@ Route::middleware(['auth', 'approved.renter'])->group(function () {
     });
 });
 Route::get('/api/cars/related/{car}', [CarController::class, 'relatedCars'])->name('cars.related');
+Route::get('/api/cars/{car}/availability', [CarController::class, 'checkAvailability'])->name('cars.availability');
 Route::get('/cars/{car}', [CarController::class, 'publicShow'])->name('cars.publicShow');
 Route::get('/agency/status', [AgencyController::class, 'status'])->name('agency.status')->middleware(['auth']);
 

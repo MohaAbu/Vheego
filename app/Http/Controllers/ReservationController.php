@@ -7,6 +7,7 @@ use App\Models\Car;
 use App\Http\Requests\ReservationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
 
 class ReservationController extends Controller
 {
@@ -14,9 +15,10 @@ class ReservationController extends Controller
     public function index(Request $request)
     {
         $user = $request->user();
+        
         if ($user->user_type === 'customer') {
             // Customer: show their own reservations
-            $reservations = Reservation::with('car.agency')
+            $reservations = Reservation::with(['car.agency', 'car.images', 'review'])
                 ->where('customer_id', $user->id)
                 ->orderByDesc('created_at')
                 ->get();
@@ -28,7 +30,7 @@ class ReservationController extends Controller
             // Renter: show reservations for their cars
             $agency = $user->agency;
             $reservations = $agency
-                ? Reservation::with('car.agency')
+                ? Reservation::with(['car.agency', 'car.images', 'customer', 'review'])
                     ->whereHas('car', function ($q) use ($agency) {
                         $q->where('agency_id', $agency->id);
                     })
@@ -37,26 +39,77 @@ class ReservationController extends Controller
                 : collect();
         } else {
             // Admin: show all reservations
-            $reservations = Reservation::with('car.agency', 'customer')
+            $reservations = Reservation::with(['car.agency', 'car.images', 'customer', 'review'])
                 ->orderByDesc('created_at')
                 ->get();
         }
-        return response()->json($reservations);
+        
+        if ($request->wantsJson()) {
+            return response()->json($reservations);
+        }
+        
+        $viewName = $user->user_type === 'customer' ? 'Customer/Reservations' : 'Admin/Reservations';
+        
+        return Inertia::render($viewName, [
+            'reservations' => $reservations
+        ]);
     }
 
     // Show details for a single reservation
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $reservation = Reservation::with('car.agency', 'customer')->findOrFail($id);
-        // Authorization: only customer, renter (of car), or admin can view
+        $reservation = Reservation::with(['car.agency', 'car.images', 'customer', 'review'])->findOrFail($id);
         $user = Auth::user();
+        
+        // Authorization: only customer, renter (of car), or admin can view
         if (
-            $user->user_type === 'customer' && $reservation->customer_id !== $user->id ||
-            $user->user_type === 'renter' && $reservation->car->agency->renter_id !== $user->id
+            ($user->user_type === 'customer' && $reservation->customer_id !== $user->id) ||
+            ($user->user_type === 'renter' && $reservation->car->agency->renter_id !== $user->id) &&
+            ($user->user_type !== 'admin')
         ) {
-            abort(403);
+            abort(403, 'Unauthorized to view this reservation.');
         }
-        return response()->json($reservation);
+        
+        if ($request->wantsJson()) {
+            return response()->json($reservation);
+        }
+        
+        return Inertia::render('Reservations/Show', [
+            'reservation' => $reservation
+        ]);
+    }
+
+    // Show form for creating a new reservation
+    public function create(Request $request)
+    {
+        $car_id = $request->query('car_id');
+        $start_date = $request->query('start_date');
+        $end_date = $request->query('end_date');
+        
+        $car = null;
+        if ($car_id) {
+            $car = Car::with('agency')->findOrFail($car_id);
+            
+            // Check availability if dates provided
+            if ($start_date && $end_date) {
+                if (!$car->isAvailable($start_date, $end_date)) {
+                    return response()->json(['message' => 'Car is not available for the selected dates.'], 422);
+                }
+                
+                $days = (new \DateTime($end_date))->diff(new \DateTime($start_date))->days + 1;
+                $total_price = $days * $car->rental_price_per_day;
+                
+                return response()->json([
+                    'car' => $car,
+                    'start_date' => $start_date,
+                    'end_date' => $end_date,
+                    'days' => $days,
+                    'total_price' => $total_price
+                ]);
+            }
+        }
+        
+        return response()->json(['car' => $car]);
     }
 
     // Create a new reservation (status: pending_payment)
@@ -82,19 +135,26 @@ class ReservationController extends Controller
         if ($request->wantsJson()) {
             return response()->json($reservation, 201);
         }
-        return redirect()->route('reservations.payment', $reservation->id);
+        return redirect()->route('reservations.payment', $reservation->id)->with('success', 'Reservation created! Please complete payment.');
     }
 
     // Show mock payment form
-    public function paymentForm($id)
+    public function paymentForm(Request $request, $id)
     {
-        $reservation = Reservation::with('car.agency')->findOrFail($id);
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $reservation = Reservation::with(['car.agency', 'car.images'])->findOrFail($id);
+        $user = Auth::user();
+        
         if ($reservation->customer_id !== $user->id) {
-            abort(403);
+            abort(403, 'Unauthorized access.');
         }
-        // For API: return reservation data; for web: return view (to be implemented)
-        return response()->json(['reservation' => $reservation]);
+        
+        if ($request->wantsJson()) {
+            return response()->json(['reservation' => $reservation]);
+        }
+        
+        return Inertia::render('Reservations/Payment', [
+            'reservation' => $reservation
+        ]);
     }
 
     // Process mock payment
@@ -129,15 +189,22 @@ class ReservationController extends Controller
     }
 
     // Show confirmation page
-    public function confirmation($id)
+    public function confirmation(Request $request, $id)
     {
-        $reservation = Reservation::with('car.agency')->findOrFail($id);
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $reservation = Reservation::with(['car.agency', 'car.images'])->findOrFail($id);
+        $user = Auth::user();
+        
         if ($reservation->customer_id !== $user->id) {
-            abort(403);
+            abort(403, 'Unauthorized access.');
         }
-        // For API: return reservation data; for web: return view (to be implemented)
-        return response()->json(['reservation' => $reservation, 'message' => 'Reservation confirmed!']);
+        
+        if ($request->wantsJson()) {
+            return response()->json(['reservation' => $reservation, 'message' => 'Reservation confirmed!']);
+        }
+        
+        return Inertia::render('Reservations/Confirmation', [
+            'reservation' => $reservation
+        ]);
     }
 
     // Update reservation status (for renters to manage their bookings)

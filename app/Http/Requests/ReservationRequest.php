@@ -11,7 +11,8 @@ class ReservationRequest extends FormRequest
     public function authorize()
     {
         // Only authenticated users can make reservations
-        return $this->user() !== null && $this->user()->user_type === 'customer';
+        // Allow customers and admins to make reservations
+        return $this->user() !== null && in_array($this->user()->user_type, ['customer', 'admin']);
     }
 
     public function rules()

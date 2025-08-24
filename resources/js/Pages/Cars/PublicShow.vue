@@ -4,7 +4,7 @@ import NavBar from '../../Components/NavBar.vue';
 import Footer from '../../Components/Footer.vue';
 import FavoriteButton from '../../Components/FavoriteButton.vue';
 import Breadcrumb from '../../Components/Breadcrumb.vue';
-import { usePage } from '@inertiajs/vue3';
+import { usePage, router } from '@inertiajs/vue3';
 import { ref, onMounted, computed } from 'vue';
 
 const page = usePage();
@@ -29,6 +29,20 @@ const submittingReview = ref(false);
 // Related cars
 const relatedCars = ref([]);
 const loadingRelatedCars = ref(true);
+
+// Booking modal state
+const showBookingModal = ref(false);
+const bookingForm = ref({
+  start_date: '',
+  end_date: '',
+  total_price: 0,
+  days: 0
+});
+const bookingLoading = ref(false);
+const availabilityChecking = ref(false);
+const availabilityStatus = ref(null); // 'available', 'unavailable', null
+const availabilityMessage = ref('');
+const today = new Date().toISOString().split('T')[0];
 
 // Computed property to check if user is authenticated
 const isAuthenticated = computed(() => {
@@ -132,8 +146,104 @@ const handleBookNow = () => {
   } else if (!canBook.value) {
     alert('Only customers can book cars. Please contact support if you need assistance.');
   } else {
-    // Navigate to booking/reservation page
-    window.location.href = `/reservations/create?car_id=${props.car.id}`;
+    // Open booking modal
+    openBookingModal();
+  }
+};
+
+const openBookingModal = () => {
+  bookingForm.value.start_date = today;
+  bookingForm.value.end_date = today;
+  calculateBookingPrice();
+  showBookingModal.value = true;
+};
+
+const closeBookingModal = () => {
+  showBookingModal.value = false;
+  bookingForm.value = {
+    start_date: '',
+    end_date: '',
+    total_price: 0,
+    days: 0
+  };
+  availabilityStatus.value = null;
+  availabilityMessage.value = '';
+  availabilityChecking.value = false;
+};
+
+const calculateBookingPrice = () => {
+  if (bookingForm.value.start_date && bookingForm.value.end_date && props.car) {
+    const startDate = new Date(bookingForm.value.start_date);
+    const endDate = new Date(bookingForm.value.end_date);
+    const timeDiff = endDate - startDate;
+    const days = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1;
+    
+    if (days > 0) {
+      bookingForm.value.days = days;
+      bookingForm.value.total_price = days * props.car.rental_price_per_day;
+      checkAvailability();
+    } else {
+      bookingForm.value.days = 0;
+      bookingForm.value.total_price = 0;
+      availabilityStatus.value = null;
+    }
+  }
+};
+
+const checkAvailability = async () => {
+  if (!props.car || !bookingForm.value.start_date || !bookingForm.value.end_date) {
+    availabilityStatus.value = null;
+    return;
+  }
+  
+  availabilityChecking.value = true;
+  availabilityStatus.value = null;
+  
+  try {
+    const response = await fetch(`/api/cars/${props.car.id}/availability?start_date=${bookingForm.value.start_date}&end_date=${bookingForm.value.end_date}`);
+    const data = await response.json();
+    
+    if (data.available) {
+      availabilityStatus.value = 'available';
+      availabilityMessage.value = 'Car is available for selected dates';
+    } else {
+      availabilityStatus.value = 'unavailable';
+      availabilityMessage.value = data.message || 'Car is not available for selected dates';
+    }
+  } catch (error) {
+    console.error('Error checking availability:', error);
+    availabilityStatus.value = 'error';
+    availabilityMessage.value = 'Unable to check availability. Please try again.';
+  } finally {
+    availabilityChecking.value = false;
+  }
+};
+
+const submitBooking = async () => {
+  if (!props.car || !page.props.auth.user) return;
+  
+  bookingLoading.value = true;
+  
+  try {
+    router.post('/reservations', {
+      car_id: props.car.id,
+      start_date: bookingForm.value.start_date,
+      end_date: bookingForm.value.end_date
+    }, {
+      onSuccess: () => {
+        closeBookingModal();
+      },
+      onError: (errors) => {
+        console.error('Booking failed:', errors);
+        // Handle validation errors here if needed
+      },
+      onFinish: () => {
+        bookingLoading.value = false;
+      }
+    });
+  } catch (error) {
+    console.error('Booking failed:', error);
+    bookingLoading.value = false;
   }
 };
 
@@ -672,5 +782,165 @@ const fetchRelatedCars = async () => {
     </main>
     
     <Footer />
+    
+    <!-- Booking Modal -->
+    <Teleport to="body">
+      <div 
+        v-if="showBookingModal" 
+        class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+        @click="closeBookingModal"
+      >
+        <div 
+          class="bg-white rounded-2xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+          @click.stop
+        >
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <div>
+              <h3 class="text-xl font-bold text-gray-900">Book Your Car</h3>
+              <p class="text-sm text-gray-600 mt-1">Complete your reservation details</p>
+            </div>
+            <button 
+              @click="closeBookingModal"
+              class="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            >
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          
+          <!-- Modal Content -->
+          <div class="p-6">
+            <!-- Car Info -->
+            <div class="mb-6 p-4 bg-gray-50 rounded-xl">
+              <div class="flex items-center gap-4">
+                <img 
+                  :src="carImages[0]" 
+                  :alt="`${car.make} ${car.model}`"
+                  class="w-20 h-16 object-contain rounded-lg bg-white"
+                />
+                <div class="flex-1">
+                  <h4 class="font-bold text-lg text-gray-900">{{ car.make }} {{ car.model }}</h4>
+                  <p class="text-sm text-gray-600">{{ car.year }} • {{ car.category }}</p>
+                  <p class="text-lg font-bold text-blue-600">${{ car.rental_price_per_day }}/day</p>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Booking Form -->
+            <form @submit.prevent="submitBooking" class="space-y-4">
+              <!-- Date Range -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">From Date</label>
+                  <input 
+                    type="date" 
+                    v-model="bookingForm.start_date"
+                    @change="calculateBookingPrice"
+                    :min="today"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">To Date</label>
+                  <input 
+                    type="date" 
+                    v-model="bookingForm.end_date"
+                    @change="calculateBookingPrice"
+                    :min="bookingForm.start_date || today"
+                    required
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              </div>
+              
+              <!-- Availability Check -->
+              <div v-if="bookingForm.start_date && bookingForm.end_date" class="mb-4">
+                <div v-if="availabilityChecking" class="flex items-center gap-2 text-blue-600">
+                  <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                  </svg>
+                  Checking availability...
+                </div>
+                <div v-else-if="availabilityStatus === 'available'" class="flex items-center gap-2 text-green-600">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                  {{ availabilityMessage }}
+                </div>
+                <div v-else-if="availabilityStatus === 'unavailable'" class="flex items-center gap-2 text-red-600">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                  </svg>
+                  {{ availabilityMessage }}
+                </div>
+                <div v-else-if="availabilityStatus === 'error'" class="flex items-center gap-2 text-orange-600">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                  </svg>
+                  {{ availabilityMessage }}
+                </div>
+              </div>
+              
+              <!-- Pricing Summary -->
+              <div v-if="bookingForm.days > 0 && availabilityStatus === 'available'" class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h5 class="font-medium text-gray-900 mb-3">Booking Summary</h5>
+                <div class="space-y-2 text-sm">
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Duration:</span>
+                    <span class="font-medium">{{ bookingForm.days }} day{{ bookingForm.days > 1 ? 's' : '' }}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-gray-600">Rate per day:</span>
+                    <span class="font-medium">${{ car.rental_price_per_day }}</span>
+                  </div>
+                  <div class="flex justify-between font-bold text-lg pt-2 border-t border-blue-200">
+                    <span>Total:</span>
+                    <span class="text-blue-600">${{ bookingForm.total_price.toFixed(2) }}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Submit Button -->
+              <div class="flex gap-3 pt-4">
+                <button 
+                  type="button"
+                  @click="closeBookingModal"
+                  class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  :disabled="bookingLoading || bookingForm.days <= 0 || !page.props.auth.user || availabilityStatus !== 'available' || availabilityChecking"
+                  class="flex-1 bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 rounded-lg font-bold hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span v-if="bookingLoading" class="flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Booking...
+                  </span>
+                  <span v-else-if="!page.props.auth.user">
+                    Login to Book
+                  </span>
+                  <span v-else-if="availabilityStatus === 'unavailable'">
+                    Not Available
+                  </span>
+                  <span v-else-if="availabilityChecking">
+                    Checking...
+                  </span>
+                  <span v-else>
+                    Confirm Booking
+                  </span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>

@@ -346,11 +346,19 @@ class CarController extends Controller
         $limit = $request->filled('limit') ? (int)$request->limit : 10;
         $cars = $query->paginate($limit);
         
-        // Parse features JSON for each car
-        $cars->getCollection()->transform(function ($car) {
+        // Parse features JSON and add favorite status for each car
+        $user = Auth::user();
+        $favoriteCarIds = [];
+        
+        if ($user && $user->user_type === 'customer') {
+            $favoriteCarIds = $user->favorites()->pluck('car_id')->toArray();
+        }
+        
+        $cars->getCollection()->transform(function ($car) use ($favoriteCarIds) {
             if ($car->features && is_string($car->features)) {
                 $car->features = json_decode($car->features, true) ?: [];
             }
+            $car->is_favorited = in_array($car->id, $favoriteCarIds);
             return $car;
         });
         
@@ -451,6 +459,47 @@ class CarController extends Controller
         return response()->json([
             'data' => $relatedCars,
             'total' => $relatedCars->count()
+        ]);
+    }
+
+    // Check car availability for specific date range
+    public function checkAvailability(Request $request, Car $car)
+    {
+        $request->validate([
+            'start_date' => 'required|date|after_or_equal:today',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        // Check if user already has a pending/active reservation for this car
+        if ($request->user()) {
+            $userHasReservation = $car->reservations()
+                ->where('customer_id', $request->user()->id)
+                ->whereIn('status', ['pending_payment', 'active', 'confirmed'])
+                ->exists();
+            
+            if ($userHasReservation) {
+                return response()->json([
+                    'available' => false,
+                    'message' => 'You already have an active reservation for this car.'
+                ]);
+            }
+        }
+
+        $available = $car->isAvailable($startDate, $endDate);
+
+        if (!$available) {
+            return response()->json([
+                'available' => false,
+                'message' => 'Car is not available for the selected dates. Another booking or maintenance period conflicts with your dates.'
+            ]);
+        }
+
+        return response()->json([
+            'available' => true,
+            'message' => 'Car is available for the selected dates.'
         ]);
     }
 }
