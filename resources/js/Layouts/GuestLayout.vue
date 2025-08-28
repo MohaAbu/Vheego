@@ -24,29 +24,16 @@ const globalSettings = usePage().props.globalSettings || {};
         
         <!-- Main Content Container -->
         <div class="relative w-full max-w-sm z-10">
-            <!-- Enhanced Logo Section -->
-            <div class="text-center mb-6 animate-slide-in">
+            <!-- Enhanced Logo Section - Logo Only -->
+            <div class="text-center mb-8 animate-slide-in">
                 <Link href="/" class="inline-block group">
-                    <div class="flex items-center justify-center mb-4">
-                        <!-- Logo with enhanced styling -->
-                        <div class="relative">
-                            <div v-if="globalSettings.logo" class="mr-4">
-                                <img :src="`/storage/${globalSettings.logo}`" 
-                                     :alt="globalSettings.platform_name || 'Vheego'" 
-                                     class="w-16 h-16 object-contain rounded-2xl group-hover:scale-110 transition-all duration-300 shadow-lg" />
-                            </div>
-                            <div v-else>
-                                <div class="absolute inset-0 bg-gradient-to-r from-blue-400 to-cyan-400 rounded-2xl blur-sm opacity-60 group-hover:opacity-80 transition-opacity duration-300"></div>
-                                <div class="relative bg-gradient-to-r from-blue-600 to-cyan-600 rounded-2xl p-3 mr-4 group-hover:scale-110 transition-all duration-300 shadow-lg">
-                                    <span class="text-white text-xl font-bold">{{ (globalSettings.platform_name || 'Vheego').charAt(0) }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Brand name with enhanced typography -->
-                        <div class="text-left">
-                            <span class="text-3xl font-bold text-white group-hover:text-blue-100 transition-colors duration-300 font-heading tracking-tight">{{ globalSettings.platform_name || 'Vheego' }}</span>
-                            <div class="text-sm text-blue-200/80 font-medium tracking-wide">Car Rental Platform</div>
-                        </div>
+                    <div class="flex items-center justify-center">
+                        <!-- Use the same logo as navbar and footer -->
+                        <img 
+                            src="/images/Vheego.png" 
+                            alt="Vheego Logo" 
+                            class="h-24 w-auto transform transition-transform duration-300 group-hover:scale-105"
+                        />
                     </div>
                 </Link>
             </div>
@@ -137,7 +124,7 @@ const globalSettings = usePage().props.globalSettings || {};
         transform: scale(0.9);
         opacity: 0;
     }
-    100% {
+     100% {
         transform: scale(1);
         opacity: 1;
     }

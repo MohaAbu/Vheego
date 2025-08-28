@@ -66,29 +66,22 @@ onMounted(() => {
     
     <!-- Sidebar -->
     <aside :class="['sidebar', sidebarOpen ? 'sidebar-open' : 'sidebar-closed', mounted ? 'sidebar-mounted' : '']">
-      <!-- Logo Section -->
-      <div class="sidebar-header">
-        <slot name="sidebar-header">
-          <Link href="/" class="logo-container">
-            <div v-if="globalSettings.logo" class="logo-image">
-              <img :src="`/storage/${globalSettings.logo}`" 
-                   :alt="globalSettings.platform_name || 'Vheego'" 
-                   class="w-12 h-12 object-contain rounded-lg" />
-            </div>
-            <div v-else class="logo-icon">
-              <span class="logo-text">{{ (globalSettings.platform_name || 'Vheego').charAt(0) }}</span>
-              <div class="logo-glow"></div>
-            </div>
-            <div class="logo-content">
-              <span class="logo-name">{{ globalSettings.platform_name || 'Vheego' }}</span>
-              <span class="logo-subtitle">Dashboard</span>
-            </div>
-          </Link>
-        </slot>
-        <button class="sidebar-close" @click="toggleSidebar">
-          <span class="close-icon"></span>
-        </button>
+     <!-- Logo Section -->
+<div class="sidebar-header flex justify-center items-center py-4">
+  <slot name="sidebar-header">
+    <Link href="/" class="logo-container flex justify-center">
+      <!-- Use the same logo as navbar and footer -->
+      <div class="logo-image flex justify-center">
+        <img src="/images/Vheego.png" 
+             alt="Vheego" 
+             class="w-20 h-20 object-contain transform transition-transform duration-300 hover:scale-105" />
       </div>
+    </Link>
+  </slot>
+  <button class="sidebar-close absolute top-4 right-4" @click="toggleSidebar">
+    <span class="close-icon"></span>
+  </button>
+</div>
 
       <!-- Navigation -->
       <nav class="sidebar-nav">

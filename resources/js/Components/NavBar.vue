@@ -2,14 +2,19 @@
   <nav class="bg-white/95 backdrop-blur-sm border-b border-gray-200/50 px-4 py-3 sticky top-0 z-50 shadow-sm">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <!-- Logo Section -->
-      <a href="/" class="flex items-center group">
-        <div class="bg-gradient-to-r from-blue-600 to-cyan-600 rounded-xl p-2 mr-3 group-hover:scale-110 transition-transform duration-300">
-          <span class="text-white text-xl font-bold">V</span>
-        </div>
-        <span class="font-bold text-2xl bg-gradient-to-r from-blue-600 to-cyan-600 bg-clip-text text-transparent">
-          Vheego
-        </span>
-      </a>
+
+<a href="/" class="flex items-center group" style="height: 3.2rem;">
+  <img 
+    src="/images/Vheego.png" 
+    alt="Vheego Logo" 
+    class="w-auto transform origin-left transition-transform duration-300"
+    style="height: 3.2rem; transform: scale(2.2);"
+  />
+</a>
+
+
+
+
 
       <!-- Desktop Navigation Menu -->
       <div class="hidden md:flex items-center space-x-8">
